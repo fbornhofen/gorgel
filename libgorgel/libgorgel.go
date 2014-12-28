@@ -30,12 +30,12 @@ func NewGorgel(samplerate int, channels int, samplesPerUnit int) *Gorgel {
 }
 
 func (g *Gorgel) init() {
-	a440hz := float32(g.Samplerate) / math.Pi / 2.0 / 440
-	g.notes = make([]float32, 37)
+	a110hz := float32(g.Samplerate) / math.Pi / 2.0 / 110
+	g.notes = make([]float32, 49)
 	step := math.Pow(2, 1./12)
 	g.notes[0] = 99999
-	for i := 1; i < 37; i++ {
-		g.notes[i] = a440hz / float32(math.Pow(step, float64(i)))
+	for i := 1; i < 49; i++ {
+		g.notes[i] = a110hz / float32(math.Pow(step, float64(i)))
 	}
 }
 
@@ -68,6 +68,9 @@ func (g *Gorgel) Synthesize(seq *[]int, filename string) {
 		for j := 0; j < g.SamplesPerUnit; j++ {
 			val := sampleNotes(&snotes, g.amplitude, j)
 			g.file.WriteItems([]int16{val})
+		}
+		for j := 0; j < g.SamplesPerUnit; j++ {
+			g.file.WriteItems([]int16{0})
 		}
 	}
 }

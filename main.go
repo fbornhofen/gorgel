@@ -10,11 +10,11 @@ import (
 
 func main() {
 	fmt.Printf("Welcome to Gorgel\n")
-	g := libgorgel.NewGorgel(44100, 1, 44100/7)
-	seq := []int{16, 14, 16, 11, 7, 11, 4, 0,
-				 16, 14, 16, 11, 7, 11, 4, 0,
-				 16, 18, 19, 18, 19, 16, 18, 16,
-				 18, 14, 16, 14, 16, 11, 16}
+	g := libgorgel.NewGorgel(44100, 1, 44100/8)
+	seq := []int{40, 38, 40, 35, 31, 35, 28, 0,
+		         40, 38, 40, 35, 31, 35, 28, 0,
+		         40, 42, 43, 42, 43, 40, 42, 40,
+		         42, 38, 40, 38, 40, 35, 40}
 	
 	outfilename := "output.wav"
 	if (len(os.Args) > 1) {
