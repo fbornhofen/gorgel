@@ -77,3 +77,10 @@ func (s *Synthesizer) WriteWaveFile(filename string) {
 		f.WriteItems([]int16{val})
 	}
 }
+
+func (s *Synthesizer) ReadFromFile(filename string) error {
+	g := NewGorgelFile(filename, s)
+	err := g.Read()
+	s.commands = g.Commands()
+	return err
+}

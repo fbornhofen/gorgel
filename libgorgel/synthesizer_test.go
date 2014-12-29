@@ -13,3 +13,14 @@ func TestNumSamples(t *testing.T) {
 		t.Errorf("expected: 88200, actual: %d", n)
 	}
 }
+
+func TestReadFromFile(t *testing.T) {
+	s := NewSynthesizer(120, 44100)
+	err := s.ReadFromFile("testdata/popcorn.gorgel")
+	if err != nil {
+		t.Errorf("%s", err)
+	}
+	if len(s.commands) != 29 {
+		t.Errorf("expected to read 29 commands, not %d", len(s.commands))
+	}
+}

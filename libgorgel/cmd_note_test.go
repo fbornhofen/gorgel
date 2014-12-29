@@ -8,6 +8,13 @@ func newSynthesizer() *Synthesizer {
 	return NewSynthesizer(120, 44100)
 }
 
+func TestAsString(t *testing.T) {
+	n := NewCmdNote(24, 4, 4, nil)
+	if n.AsString() != "N 24, 4, 4" {
+		t.Errorf("is \"%s\", should be \"N 24, 4, 4\"")
+	}
+}
+
 func TestFirstAndLastFrame(t *testing.T) {
 	s := newSynthesizer()
 	// Note starting at .5s, runnin .5s

@@ -1,6 +1,7 @@
 package libgorgel
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -15,15 +16,25 @@ type CmdNote struct {
 
 func NewCmdNote(scaleIndex int, begin int, duration int, s *Synthesizer) *CmdNote {
 	n := new(CmdNote)
-	n.synthesizer = s
 	n.ScaleIndex = scaleIndex
 	n.durationQuarterBeats = duration
 	n.beginQuarterBeats = begin
+	if s != nil {
+		n.SetSynthesizer(s)
+	}
+	return n
+}
+
+func (n *CmdNote) AsString() string {
+	return fmt.Sprintf("N %d, %d, %d", n.ScaleIndex, n.beginQuarterBeats, n.durationQuarterBeats)
+}
+
+func (n *CmdNote) SetSynthesizer(s *Synthesizer) {
+	n.synthesizer = s
 	bps := float32(s.BeatsPerMin) / 60
 	fpb := float32(s.SampleRate) / bps
 	n.BeginFrame = int(float32(n.beginQuarterBeats) / 4 * fpb)
 	n.EndFrame = int(float32(n.durationQuarterBeats)/4*fpb) + n.BeginFrame
-	return n
 }
 
 func (n *CmdNote) BeginQuarterBeats() int {

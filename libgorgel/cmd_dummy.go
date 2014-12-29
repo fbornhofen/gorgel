@@ -6,20 +6,24 @@ type CmdDummy struct {
 }
 
 func NewCmdDummy(begin int, duration int) *CmdDummy {
-	n := new(CmdDummy)
-	n.beginQuarterBeats = begin
-	n.durationQuarterBeats = duration
-	return n
+	d := new(CmdDummy)
+	d.beginQuarterBeats = begin
+	d.durationQuarterBeats = duration
+	return d
 }
 
-func (n *CmdDummy) BeginQuarterBeats() int {
-	return n.beginQuarterBeats
+func (d *CmdDummy) AsString() string {
+	return "D"
 }
 
-func (n *CmdDummy) DurationQuarterBeats() int {
-	return n.durationQuarterBeats
+func (d *CmdDummy) BeginQuarterBeats() int {
+	return d.beginQuarterBeats
 }
 
-func (n *CmdDummy) SampleFrame(s *Synthesizer, f int) int16 {
+func (d *CmdDummy) DurationQuarterBeats() int {
+	return d.durationQuarterBeats
+}
+
+func (d *CmdDummy) SampleFrame(f int) int16 {
 	return 0
 }
