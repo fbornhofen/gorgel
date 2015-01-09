@@ -9,7 +9,7 @@ func newSynthesizer() *Synthesizer {
 }
 
 func TestAsString(t *testing.T) {
-	n := NewCmdNote(24, 4, 4, nil)
+	n := NewCmdNote(24, 4, 4, ENVELOPE_RECTANGULAR, nil)
 	if n.AsString() != "N 24, 4, 4" {
 		t.Errorf("is \"%s\", should be \"N 24, 4, 4\"")
 	}
@@ -18,7 +18,7 @@ func TestAsString(t *testing.T) {
 func TestFirstAndLastFrame(t *testing.T) {
 	s := newSynthesizer()
 	// Note starting at .5s, runnin .5s
-	n := NewCmdNote(24, 4, 4, s)
+	n := NewCmdNote(24, 4, 4, ENVELOPE_RECTANGULAR, s)
 	if n.BeginFrame != 22050 {
 		t.Errorf("note should begin at 22050 (actual: %d)", n.BeginFrame)
 	}
@@ -30,7 +30,7 @@ func TestFirstAndLastFrame(t *testing.T) {
 func TestSampleAt(t *testing.T) {
 	s := newSynthesizer()
 	// Note starting at .5s, runnin .5s
-	n := NewCmdNote(24, 4, 4, s)
+	n := NewCmdNote(24, 4, 4, ENVELOPE_RECTANGULAR, s)
 	var val int16
 	val = n.SampleFrame(100)
 	if val != 0 {

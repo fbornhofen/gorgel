@@ -13,6 +13,7 @@ type Synthesizer struct {
 	Channels    int
 	scale       []float32
 	commands    []Command
+	envelopes	[]EnvelopeFunc
 }
 
 func (s *Synthesizer) createScale() {
@@ -23,6 +24,7 @@ func (s *Synthesizer) createScale() {
 	for i := 1; i < 49; i++ {
 		s.scale[i] = a110hz / float32(math.Pow(step, float64(i)))
 	}
+	fillEnvelopes(&s.envelopes)
 }
 
 func NewSynthesizer(bpm int, sampleRate int) *Synthesizer {
@@ -83,4 +85,8 @@ func (s *Synthesizer) ReadFromFile(filename string) error {
 	err := g.Read()
 	s.commands = g.Commands()
 	return err
+}
+
+func (s *Synthesizer) EvalEnvelope(e Envelope, relPos float64) float64 {
+	return s.envelopes[e](relPos)
 }

@@ -12,13 +12,15 @@ type CmdNote struct {
 	durationQuarterBeats int
 	BeginFrame           int
 	EndFrame             int
+	Envelope             Envelope
 }
 
-func NewCmdNote(scaleIndex int, begin int, duration int, s *Synthesizer) *CmdNote {
+func NewCmdNote(scaleIndex int, begin int, duration int, e Envelope, s *Synthesizer) *CmdNote {
 	n := new(CmdNote)
 	n.ScaleIndex = scaleIndex
 	n.durationQuarterBeats = duration
 	n.beginQuarterBeats = begin
+	n.Envelope = e
 	if s != nil {
 		n.SetSynthesizer(s)
 	}
@@ -45,9 +47,10 @@ func (n *CmdNote) DurationQuarterBeats() int {
 	return n.durationQuarterBeats
 }
 
-func sampleNote(freq float32, amplitude float32, pos int) int16 {
+func (n *CmdNote) sampleNote(freq float32, amplitude float32, pos int) int16 {
 	val := float64(amplitude) * math.Sin(float64(pos)/float64(freq)) / 2.0
-	return int16(val)
+	relPos := float64(pos) / (float64(n.EndFrame) - float64(n.BeginFrame))
+	return int16(n.synthesizer.envelopes[n.Envelope](relPos) * val)
 }
 
 func (n *CmdNote) SampleFrame(f int) int16 {
@@ -55,5 +58,5 @@ func (n *CmdNote) SampleFrame(f int) int16 {
 		return 0
 	}
 	pos := f - n.BeginFrame
-	return sampleNote(n.synthesizer.scale[n.ScaleIndex], 8000, pos)
+	return n.sampleNote(n.synthesizer.scale[n.ScaleIndex], 8000, pos)
 }

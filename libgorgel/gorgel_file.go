@@ -24,12 +24,24 @@ func NewGorgelFile(filename string, s *Synthesizer) *GorgelFile {
 }
 
 func (g *GorgelFile) createCommand(t rune, params []string) (Command, error) {
+	numParams := len(params)
 	switch t {
 	case 'N':
 		idx, _ := strconv.ParseInt(params[0], 10, 32)
 		begin, _ := strconv.ParseInt(params[1], 10, 32)
 		duration, _ := strconv.ParseInt(params[2], 10, 32)
-		return NewCmdNote(int(idx), int(begin), int(duration), g.synthesizer), nil
+		var envelopeName string
+		envelope := ENVELOPE_RECTANGULAR
+		if numParams > 3 {
+			envelopeName = params[3]
+		}
+		switch envelopeName {
+		case "lin":
+			envelope = ENVELOPE_LINEAR
+		case "rect":
+			envelope = ENVELOPE_RECTANGULAR
+		}
+		return NewCmdNote(int(idx), int(begin), int(duration), envelope, g.synthesizer), nil
 	}
 	return nil, errors.New("invalid command")
 }
