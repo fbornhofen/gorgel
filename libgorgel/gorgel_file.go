@@ -40,6 +40,8 @@ func (g *GorgelFile) createCommand(t rune, params []string) (Command, error) {
 			envelope = ENVELOPE_LINEAR
 		case "rect":
 			envelope = ENVELOPE_RECTANGULAR
+		case "adsr":
+			envelope = ENVELOPE_ADSR
 		}
 		return NewCmdNote(int(idx), int(begin), int(duration), envelope, g.synthesizer), nil
 	}
