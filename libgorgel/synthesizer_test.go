@@ -47,3 +47,11 @@ func TestEnvelopeLinear(t *testing.T) {
 		t.Errorf("linear envelope should yield 0 at pos 1")
 	}
 }
+
+func TestDefaultEnvelope(t *testing.T) {
+	s := NewSynthesizer(120, 4410)
+	s.SetDefaultEnvelope(ENVELOPE_LINEAR)
+	if s.EvalEnvelope(ENVELOPE_DEFAULT, .5) != .5 {
+		t.Errorf("expected linear envelope")
+	}
+}

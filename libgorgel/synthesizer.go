@@ -8,12 +8,13 @@ import (
 )
 
 type Synthesizer struct {
-	BeatsPerMin int
-	SampleRate  int
-	Channels    int
-	scale       []float32
-	commands    []Command
-	envelopes	[]EnvelopeFunc
+	BeatsPerMin     int
+	SampleRate      int
+	Channels        int
+	scale           []float32
+	commands        []Command
+	envelopes       []EnvelopeFunc
+	defaultEnvelope Envelope
 }
 
 func (s *Synthesizer) createScale() {
@@ -33,6 +34,7 @@ func NewSynthesizer(bpm int, sampleRate int) *Synthesizer {
 	s.SampleRate = sampleRate
 	s.createScale()
 	s.Channels = 1
+	s.defaultEnvelope = ENVELOPE_RECTANGULAR
 	return s
 }
 
@@ -88,5 +90,12 @@ func (s *Synthesizer) ReadFromFile(filename string) error {
 }
 
 func (s *Synthesizer) EvalEnvelope(e Envelope, relPos float64) float64 {
+	if e == ENVELOPE_DEFAULT {
+		return s.envelopes[s.defaultEnvelope](relPos)
+	}
 	return s.envelopes[e](relPos)
+}
+
+func (s *Synthesizer) SetDefaultEnvelope(e Envelope) {
+	s.defaultEnvelope = e
 }

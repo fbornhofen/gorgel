@@ -50,7 +50,7 @@ func (n *CmdNote) DurationQuarterBeats() int {
 func (n *CmdNote) sampleNote(freq float32, amplitude float32, pos int) int16 {
 	val := float64(amplitude) * math.Sin(float64(pos)/float64(freq)) / 2.0
 	relPos := float64(pos) / (float64(n.EndFrame) - float64(n.BeginFrame))
-	return int16(n.synthesizer.envelopes[n.Envelope](relPos) * val)
+	return int16(n.synthesizer.EvalEnvelope(n.Envelope, relPos) * val)
 }
 
 func (n *CmdNote) SampleFrame(f int) int16 {

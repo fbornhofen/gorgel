@@ -1,3 +1,5 @@
+H bpm, 180
+H envelope, adsr
 N 40, 0, 2, adsr
 N 38, 3, 2, adsr
 N 40, 6, 2, adsr

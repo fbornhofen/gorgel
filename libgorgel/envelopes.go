@@ -6,7 +6,8 @@ type EnvelopeFunc func(float64) float64
 type Envelope int
 
 const (
-	ENVELOPE_RECTANGULAR Envelope = iota
+	ENVELOPE_DEFAULT Envelope = iota
+	ENVELOPE_RECTANGULAR
 	ENVELOPE_LINEAR
 	ENVELOPE_ADSR
 	NUMBER_OF_ENVELOPES
@@ -36,6 +37,7 @@ func AdsrEnvelope(s float64) float64 {
 
 func fillEnvelopes(envelopes *[]EnvelopeFunc) {
 	*envelopes = make([]EnvelopeFunc, NUMBER_OF_ENVELOPES)
+	(*envelopes)[ENVELOPE_DEFAULT] = RectangularEnvelope
 	(*envelopes)[ENVELOPE_RECTANGULAR] = RectangularEnvelope
 	(*envelopes)[ENVELOPE_LINEAR] = LinearEnvelope
 	(*envelopes)[ENVELOPE_ADSR] = AdsrEnvelope

@@ -31,7 +31,7 @@ func (g *GorgelFile) createCommand(t rune, params []string) (Command, error) {
 		begin, _ := strconv.ParseInt(params[1], 10, 32)
 		duration, _ := strconv.ParseInt(params[2], 10, 32)
 		var envelopeName string
-		envelope := ENVELOPE_RECTANGULAR
+		envelope := ENVELOPE_DEFAULT
 		if numParams > 3 {
 			envelopeName = params[3]
 		}
@@ -48,8 +48,31 @@ func (g *GorgelFile) createCommand(t rune, params []string) (Command, error) {
 	return nil, errors.New("invalid command")
 }
 
+func (g *GorgelFile) applyHeaderCommand(params []string) {
+	if len(params) < 2 {
+		return
+	}
+	switch params[0] {
+	case "bpm":
+		bpm, _ := strconv.ParseInt(params[1], 10, 32)
+		g.synthesizer.BeatsPerMin = int(bpm)
+	case "envelope":
+		envType := params[1]
+		switch envType {
+		case "rect":
+			g.synthesizer.defaultEnvelope = ENVELOPE_RECTANGULAR
+		case "lin":
+			g.synthesizer.defaultEnvelope = ENVELOPE_LINEAR
+		case "adsr":
+			g.synthesizer.defaultEnvelope = ENVELOPE_ADSR
+		}
+	}
+}
+
 func (g *GorgelFile) process(r *bufio.Reader) {
 	eof := false
+	isHeader := true
+	lineCount := 0
 	for eof == false {
 		line, err := r.ReadString('\n')
 		if err != nil {
@@ -68,10 +91,20 @@ func (g *GorgelFile) process(r *bufio.Reader) {
 		for i, t := range toks {
 			toks[i] = strings.TrimSpace(t)
 		}
-		c, err := g.createCommand(cmdType, toks)
-		if err == nil {
-			g.commands = append(g.commands, c)
+		if cmdType == 'H' {
+			if isHeader {
+				g.applyHeaderCommand(toks)
+			} else {
+				fmt.Errorf("line %d: warning: header command not in file header, ignoring")
+			}
+		} else {
+			isHeader = false
+			c, err := g.createCommand(cmdType, toks)
+			if err == nil {
+				g.commands = append(g.commands, c)
+			}
 		}
+		lineCount += 1
 	}
 }
 

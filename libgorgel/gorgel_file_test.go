@@ -5,7 +5,8 @@ import (
 )
 
 func TestRead(t *testing.T) {
-	g := NewGorgelFile("testdata/popcorn.gorgel", nil)
+	s := NewSynthesizer(120, 44100)
+	g := NewGorgelFile("testdata/popcorn.gorgel", s)
 	err := g.Read()
 	if err != nil {
 		t.Errorf("error reading GorgelFile during test: %s", err)
@@ -21,5 +22,20 @@ func TestRead(t *testing.T) {
 	c2 := g.Commands()[28]
 	if c2.AsString() != "N 43, 90, 2" {
 		t.Errorf("expected commands[28] to be \"N 43, 90, 2\", not \"%s\"", c2.AsString())
+	}
+}
+
+func TestReadHeader(t *testing.T) {
+	s := NewSynthesizer(120, 44100)
+	g := NewGorgelFile("testdata/popcorn.gorgel", s)
+	err := g.Read()
+	if err != nil {
+		t.Errorf("error reading GorgelFile during test: %s", err)
+	}
+	if s.BeatsPerMin != 180 {
+		t.Errorf("BPM should be set to 180, not %d", s.BeatsPerMin)
+	}
+	if s.defaultEnvelope != ENVELOPE_ADSR {
+		t.Errorf("default evenlope should be %d, not %d", ENVELOPE_ADSR, s.defaultEnvelope)
 	}
 }
