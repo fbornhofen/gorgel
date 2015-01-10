@@ -18,10 +18,10 @@ type Synthesizer struct {
 
 func (s *Synthesizer) createScale() {
 	a110hz := float32(s.SampleRate) / math.Pi / 2.0 / 110
-	s.scale = make([]float32, 49)
+	s.scale = make([]float32, 61)
 	step := math.Pow(2, 1./12)
 	s.scale[0] = 99999
-	for i := 1; i < 49; i++ {
+	for i := 1; i < 61; i++ {
 		s.scale[i] = a110hz / float32(math.Pow(step, float64(i)))
 	}
 	fillEnvelopes(&s.envelopes)
