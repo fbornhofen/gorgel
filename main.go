@@ -19,7 +19,7 @@ func main() {
 	if len(os.Args) > 2 {
 		outfilename = os.Args[2]
 	}
-	s := libgorgel.NewSynthesizer(180, 44100)
+	s := libgorgel.NewSynthesizer(120, 44100)
 	err := s.ReadFromFile(infilename)
 	if err != nil {
 		fmt.Errorf("%s", err)
