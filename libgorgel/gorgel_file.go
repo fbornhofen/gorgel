@@ -30,18 +30,10 @@ func (g *GorgelFile) createCommand(t rune, params []string) (Command, error) {
 		idx, _ := strconv.ParseInt(params[0], 10, 32)
 		begin, _ := strconv.ParseInt(params[1], 10, 32)
 		duration, _ := strconv.ParseInt(params[2], 10, 32)
-		var envelopeName string
 		envelope := ENVELOPE_DEFAULT
 		if numParams > 3 {
-			envelopeName = params[3]
-		}
-		switch envelopeName {
-		case "lin":
-			envelope = ENVELOPE_LINEAR
-		case "rect":
-			envelope = ENVELOPE_RECTANGULAR
-		case "adsr":
-			envelope = ENVELOPE_ADSR
+			envelopeName := params[3]
+			envelope = StringToEnvelope(envelopeName)
 		}
 		return NewCmdNote(int(idx), int(begin), int(duration), envelope, g.synthesizer), nil
 	}
@@ -58,14 +50,7 @@ func (g *GorgelFile) applyHeaderCommand(params []string) {
 		g.synthesizer.BeatsPerMin = int(bpm)
 	case "envelope":
 		envType := params[1]
-		switch envType {
-		case "rect":
-			g.synthesizer.defaultEnvelope = ENVELOPE_RECTANGULAR
-		case "lin":
-			g.synthesizer.defaultEnvelope = ENVELOPE_LINEAR
-		case "adsr":
-			g.synthesizer.defaultEnvelope = ENVELOPE_ADSR
-		}
+		g.synthesizer.defaultEnvelope = StringToEnvelope(envType)
 	}
 }
 

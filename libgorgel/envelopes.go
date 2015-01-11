@@ -13,6 +13,19 @@ const (
 	NUMBER_OF_ENVELOPES
 )
 
+func StringToEnvelope(s string) Envelope {
+	switch s {
+	case "lin":
+		return ENVELOPE_LINEAR
+	case "rect":
+		return ENVELOPE_RECTANGULAR
+	case "adsr":
+		return ENVELOPE_ADSR
+	default:
+		return ENVELOPE_DEFAULT
+	}
+}
+
 func RectangularEnvelope(s float64) float64 {
 	return 1
 }
