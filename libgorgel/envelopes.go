@@ -1,6 +1,8 @@
 package libgorgel
 
-import ()
+import (
+	"math"
+)
 
 type EnvelopeFunc func(float64) float64
 type Envelope int
@@ -10,6 +12,7 @@ const (
 	ENVELOPE_RECTANGULAR
 	ENVELOPE_LINEAR
 	ENVELOPE_ADSR
+	ENVELOPE_POLY
 	NUMBER_OF_ENVELOPES
 )
 
@@ -21,6 +24,8 @@ func StringToEnvelope(s string) Envelope {
 		return ENVELOPE_RECTANGULAR
 	case "adsr":
 		return ENVELOPE_ADSR
+	case "poly":
+		return ENVELOPE_POLY
 	default:
 		return ENVELOPE_DEFAULT
 	}
@@ -48,10 +53,15 @@ func AdsrEnvelope(s float64) float64 {
 	return 0.5 - 0.5*(s-0.75)/0.25
 }
 
+func PolyEnvelope(s float64) float64 {
+	return -(math.Pow(1-s, 5) - math.Pow(1-s, 4)) * 12
+}
+
 func fillEnvelopes(envelopes *[]EnvelopeFunc) {
 	*envelopes = make([]EnvelopeFunc, NUMBER_OF_ENVELOPES)
 	(*envelopes)[ENVELOPE_DEFAULT] = RectangularEnvelope
 	(*envelopes)[ENVELOPE_RECTANGULAR] = RectangularEnvelope
 	(*envelopes)[ENVELOPE_LINEAR] = LinearEnvelope
 	(*envelopes)[ENVELOPE_ADSR] = AdsrEnvelope
+	(*envelopes)[ENVELOPE_POLY] = PolyEnvelope
 }

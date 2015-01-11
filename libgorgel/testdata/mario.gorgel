@@ -1,5 +1,5 @@
 H bpm, 100
-H envelope, adsr
+H envelope, poly
 N 44, 0, 1
 N 44, 1, 2
 N 44, 3, 1
