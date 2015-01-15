@@ -1,6 +1,7 @@
 package libgorgel
 
 import (
+	"code.google.com/p/portaudio-go/portaudio"
 	"fmt"
 	"github.com/mkb218/gosndfile/sndfile"
 	"math"
@@ -15,6 +16,8 @@ type Synthesizer struct {
 	commands        []Command
 	envelopes       []EnvelopeFunc
 	defaultEnvelope Envelope
+	curSample       int
+	notifications   chan int
 }
 
 func (s *Synthesizer) createScale() {
@@ -35,6 +38,7 @@ func NewSynthesizer(bpm int, sampleRate int) *Synthesizer {
 	s.createScale()
 	s.Channels = 1
 	s.defaultEnvelope = ENVELOPE_RECTANGULAR
+	s.notifications = make(chan int)
 	return s
 }
 
@@ -73,12 +77,39 @@ func (s *Synthesizer) WriteWaveFile(filename string) {
 	f := s.openAndWriteHeader(filename)
 	numSamples := s.NumSamples()
 	fmt.Printf("Sampling %d frames\n", numSamples)
-	for i := 0; i < numSamples; i++ {
+	for s.curSample = 0; s.curSample < numSamples; s.curSample++ {
 		var val int16 = 0
 		for _, c := range s.commands {
-			val += c.SampleFrame(i)
+			val += c.SampleFrame(s.curSample)
 		}
 		f.WriteItems([]int16{val})
+	}
+}
+
+func (s *Synthesizer) Play() {
+	portaudio.Initialize()
+	defer portaudio.Terminate()
+	stream, err := portaudio.OpenDefaultStream(0, 1, float64(s.SampleRate), 0, s.SampleBuffer)
+	if err != nil {
+		panic(err)
+	}
+	stream.Start()
+	<-s.notifications
+	stream.Stop()
+}
+
+func (s *Synthesizer) SampleBuffer(out [][]float32) {
+	for i := range out[0] {
+		var val float32 = 0
+		for _, c := range s.commands {
+			val += float32(c.SampleFrame(s.curSample))
+		}
+		out[0][i] = val / 0x7FFF
+		s.curSample++
+		if s.curSample == s.NumSamples() {
+			s.notifications <- 1
+			return
+		}
 	}
 }
 
