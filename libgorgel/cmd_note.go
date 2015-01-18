@@ -47,6 +47,14 @@ func (n *CmdNote) DurationQuarterBeats() int {
 	return n.durationQuarterBeats
 }
 
+func (n *CmdNote) FirstSample() int {
+	return n.BeginFrame
+}
+
+func (n *CmdNote) LastSample() int {
+	return n.EndFrame
+}
+
 func (n *CmdNote) sampleNote(freq float32, amplitude float32, pos int) int16 {
 	val := float64(amplitude) * math.Sin(float64(pos)/float64(freq)) / 2.0
 	relPos := float64(pos) / (float64(n.EndFrame) - float64(n.BeginFrame))

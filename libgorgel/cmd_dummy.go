@@ -24,6 +24,14 @@ func (d *CmdDummy) DurationQuarterBeats() int {
 	return d.durationQuarterBeats
 }
 
+func (d *CmdDummy) FirstSample() int {
+	return d.beginQuarterBeats * 100
+}
+
+func (d *CmdDummy) LastSample() int {
+	return (d.beginQuarterBeats + d.durationQuarterBeats) * 100
+}
+
 func (d *CmdDummy) SampleFrame(f int) int16 {
 	return 0
 }

@@ -14,6 +14,8 @@ type Synthesizer struct {
 	Channels        int
 	scale           []float32
 	commands        []Command
+	commandStarts   map[int][]Command
+	activeCommands  []Command
 	envelopes       []EnvelopeFunc
 	defaultEnvelope Envelope
 	curSample       int
@@ -39,14 +41,22 @@ func NewSynthesizer(bpm int, sampleRate int) *Synthesizer {
 	s.Channels = 1
 	s.defaultEnvelope = ENVELOPE_RECTANGULAR
 	s.notifications = make(chan int)
+	s.activeCommands = make([]Command, 0)
+	s.commandStarts = make(map[int][]Command)
 	return s
 }
 
 func (s *Synthesizer) AddCommand(c Command) {
 	s.commands = append(s.commands, c)
+	f := c.FirstSample()
+	if s.commandStarts[f] == nil {
+		s.commandStarts[f] = make([]Command, 0)
+	}
+	s.commandStarts[f] = append(s.commandStarts[f], c)
 }
 
 func (s *Synthesizer) NumSamples() int {
+	// FIXME Use Command.LastSample
 	maxQuarterBeat := 0
 	for _, c := range s.commands {
 		end := c.BeginQuarterBeats() + c.DurationQuarterBeats()
@@ -74,6 +84,7 @@ func (s *Synthesizer) openAndWriteHeader(filename string) *sndfile.File {
 }
 
 func (s *Synthesizer) WriteWaveFile(filename string) {
+	// FIXME Use SampleBuffer or similar. Iterating over all commands does not scale well.
 	f := s.openAndWriteHeader(filename)
 	numSamples := s.NumSamples()
 	fmt.Printf("Sampling %d frames\n", numSamples)
@@ -93,6 +104,7 @@ func (s *Synthesizer) Play() {
 	if err != nil {
 		panic(err)
 	}
+	s.curSample = 0
 	stream.Start()
 	<-s.notifications
 	stream.Stop()
@@ -101,9 +113,20 @@ func (s *Synthesizer) Play() {
 func (s *Synthesizer) SampleBuffer(out [][]float32) {
 	for i := range out[0] {
 		var val float32 = 0
-		for _, c := range s.commands {
-			val += float32(c.SampleFrame(s.curSample))
+		start := s.commandStarts[s.curSample]
+		if start != nil {
+			for _, c := range start {
+				s.activeCommands = append(s.activeCommands, c)
+			}
 		}
+		newActive := make([]Command, 0)
+		for _, c := range s.activeCommands {
+			val += float32(c.SampleFrame(s.curSample))
+			if s.curSample < c.LastSample() {
+				newActive = append(newActive, c)
+			}
+		}
+		s.activeCommands = newActive
 		out[0][i] = val / 0x7FFF
 		s.curSample++
 		if s.curSample == s.NumSamples() {
@@ -116,7 +139,9 @@ func (s *Synthesizer) SampleBuffer(out [][]float32) {
 func (s *Synthesizer) ReadFromFile(filename string) error {
 	g := NewGorgelFile(filename, s)
 	err := g.Read()
-	s.commands = g.Commands()
+	for _, c := range g.Commands() {
+		s.AddCommand(c)
+	}
 	return err
 }
 

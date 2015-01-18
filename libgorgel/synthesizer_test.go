@@ -49,9 +49,32 @@ func TestEnvelopeLinear(t *testing.T) {
 }
 
 func TestDefaultEnvelope(t *testing.T) {
-	s := NewSynthesizer(120, 4410)
+	s := NewSynthesizer(120, 44100)
 	s.SetDefaultEnvelope(ENVELOPE_LINEAR)
 	if s.EvalEnvelope(ENVELOPE_DEFAULT, .5) != .5 {
 		t.Errorf("expected linear envelope")
+	}
+}
+
+func TestSampleBuffer(t *testing.T) {
+	s := NewSynthesizer(120, 44100)
+	s.AddCommand(NewCmdNote(25, 0, 1, ENVELOPE_DEFAULT, s))
+	s.AddCommand(NewCmdNote(37, 1, 1, ENVELOPE_DEFAULT, s))
+	s.AddCommand(NewCmdNote(49, 480, 1, ENVELOPE_DEFAULT, s))
+	buf := make([][]float32, 1)
+	buf[0] = make([]float32, 10)
+	s.SampleBuffer(buf)
+	l := len(s.activeCommands)
+	if l != 1 {
+		t.Errorf("Have %d active commands, should have 1", l)
+	}
+	// Sample a number of buffers so we end up in the long silence between
+	// notes 37 and 49.
+	for i := 0; i < 2000; i++ {
+		s.SampleBuffer(buf)
+	}
+	l = len(s.activeCommands)
+	if l != 0 {
+		t.Errorf("Have %d active commands, should have 0", l)
 	}
 }
