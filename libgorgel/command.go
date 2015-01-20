@@ -8,5 +8,5 @@ type Command interface {
 	DurationQuarterBeats() int
 	FirstSample() int
 	LastSample() int
-	SampleFrame(f int) int16
+	SampleFrame(f int) float32
 }

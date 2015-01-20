@@ -127,7 +127,10 @@ func (s *Synthesizer) SampleBuffer(out [][]float32) {
 			}
 		}
 		s.activeCommands = newActive
-		out[0][i] = val / 0x7FFF
+		if val > 1.0 {
+			val = 1.0
+		}
+		out[0][i] = val
 		s.curSample++
 		if s.curSample == s.NumSamples() {
 			s.notifications <- 1
