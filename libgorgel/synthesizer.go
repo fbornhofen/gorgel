@@ -56,16 +56,13 @@ func (s *Synthesizer) AddCommand(c Command) {
 }
 
 func (s *Synthesizer) NumSamples() int {
-	// FIXME Use Command.LastSample
-	maxQuarterBeat := 0
+	max := 0
 	for _, c := range s.commands {
-		end := c.BeginQuarterBeats() + c.DurationQuarterBeats()
-		if end > maxQuarterBeat {
-			maxQuarterBeat = end
+		if c.LastSample() > max {
+			max = c.LastSample()
 		}
 	}
-	bps := float32(s.BeatsPerMin) / 60.0
-	return int(float32(maxQuarterBeat) * float32(s.SampleRate) / bps / 4.0)
+	return max
 }
 
 func (s *Synthesizer) openAndWriteHeader(filename string) *sndfile.File {
