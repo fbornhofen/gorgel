@@ -81,17 +81,20 @@ func (s *Synthesizer) openAndWriteHeader(filename string) *sndfile.File {
 }
 
 func (s *Synthesizer) WriteWaveFile(filename string) {
-	// FIXME Use SampleBuffer or similar. Iterating over all commands does not scale well.
 	f := s.openAndWriteHeader(filename)
 	numSamples := s.NumSamples()
-	fmt.Printf("Sampling %d frames\n", numSamples)
-	for s.curSample = 0; s.curSample < numSamples; s.curSample++ {
-		var val int16 = 0
-		for _, c := range s.commands {
-			val += c.SampleFrame(s.curSample)
-		}
-		f.WriteItems([]int16{val})
+	buf := make([][]float32, 1)
+	buf[0] = make([]float32, numSamples)
+	writeBuf := make([]int16, numSamples)
+	go func() {
+		s.SampleBuffer(buf)
+
+	}()
+	<-s.notifications
+	for i := 0; i < numSamples; i++ {
+		writeBuf[i] = int16(buf[0][i] * 0x7FFF)
 	}
+	f.WriteItems(writeBuf)
 }
 
 func (s *Synthesizer) Play() {
