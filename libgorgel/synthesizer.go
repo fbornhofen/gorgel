@@ -15,6 +15,7 @@ type Synthesizer struct {
 	scale           []float32
 	commands        []Command
 	commandStarts   map[int][]Command
+	commandEnds     map[int][]Command
 	activeCommands  []Command
 	envelopes       []EnvelopeFunc
 	defaultEnvelope Envelope
@@ -43,6 +44,7 @@ func NewSynthesizer(bpm int, sampleRate int) *Synthesizer {
 	s.notifications = make(chan int)
 	s.activeCommands = make([]Command, 0)
 	s.commandStarts = make(map[int][]Command)
+	s.commandEnds = make(map[int][]Command)
 	return s
 }
 
@@ -53,6 +55,11 @@ func (s *Synthesizer) AddCommand(c Command) {
 		s.commandStarts[f] = make([]Command, 0)
 	}
 	s.commandStarts[f] = append(s.commandStarts[f], c)
+	l := c.LastSample()
+	if s.commandEnds[l] == nil {
+		s.commandEnds[l] = make([]Command, 0)
+	}
+	s.commandEnds[l] = append(s.commandEnds[l], c)
 }
 
 func (s *Synthesizer) NumSamples() int {
@@ -88,7 +95,6 @@ func (s *Synthesizer) WriteWaveFile(filename string) {
 	writeBuf := make([]int16, numSamples)
 	go func() {
 		s.SampleBuffer(buf)
-
 	}()
 	<-s.notifications
 	for i := 0; i < numSamples; i++ {
@@ -110,23 +116,52 @@ func (s *Synthesizer) Play() {
 	stream.Stop()
 }
 
+func (s *Synthesizer) activateCommand(c Command) {
+	s.activeCommands = append(s.activeCommands, c)
+}
+
+func (s *Synthesizer) activateUpcoming() {
+	upcoming := s.commandStarts[s.curSample]
+	if upcoming == nil {
+		return
+	}
+	for _, c := range upcoming {
+		s.activateCommand(c)
+	}
+}
+
+func (s *Synthesizer) deactivateCommand(c Command) {
+	idx := -1
+	for i, a := range s.activeCommands {
+		if a == c {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return
+	}
+	s.activeCommands = append(s.activeCommands[:idx], s.activeCommands[idx+1:]...)
+}
+
+func (s *Synthesizer) deactivateCompleted() {
+	completed := s.commandEnds[s.curSample]
+	if completed == nil {
+		return
+	}
+	for _, c := range completed {
+		s.deactivateCommand(c)
+	}
+}
+
 func (s *Synthesizer) SampleBuffer(out [][]float32) {
 	for i := range out[0] {
 		var val float32 = 0
-		start := s.commandStarts[s.curSample]
-		if start != nil {
-			for _, c := range start {
-				s.activeCommands = append(s.activeCommands, c)
-			}
-		}
-		newActive := make([]Command, 0)
+		s.activateUpcoming()
 		for _, c := range s.activeCommands {
 			val += float32(c.SampleFrame(s.curSample))
-			if s.curSample < c.LastSample() {
-				newActive = append(newActive, c)
-			}
 		}
-		s.activeCommands = newActive
+		s.deactivateCompleted()
 		if val > 1.0 {
 			val = 1.0
 		}

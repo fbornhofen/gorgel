@@ -78,3 +78,40 @@ func TestSampleBuffer(t *testing.T) {
 		t.Errorf("Have %d active commands, should have 0", l)
 	}
 }
+
+func TestActivateUpcoming(t *testing.T) {
+	s := NewSynthesizer(120, 44100)
+	n1 := NewCmdNote(25, 0, 1, ENVELOPE_DEFAULT, s)
+	n2 := NewCmdNote(37, 1, 2, ENVELOPE_DEFAULT, s)
+	n3 := NewCmdNote(38, 0, 1, ENVELOPE_DEFAULT, s)
+	n4 := NewCmdNote(39, 0, 2, ENVELOPE_DEFAULT, s)
+	s.AddCommand(n1)
+	s.AddCommand(n2)
+	s.AddCommand(n3)
+	s.AddCommand(n4)
+	s.curSample = 0
+	s.activateUpcoming()
+	res := len(s.activeCommands)
+	if res != 3 {
+		t.Errorf("Have %d active commands, should have 3", res)
+	}
+}
+
+func TestDeactivateCompleted(t *testing.T) {
+	s := NewSynthesizer(120, 44100)
+	n1 := NewCmdNote(25, 0, 1, ENVELOPE_DEFAULT, s)
+	n2 := NewCmdNote(37, 0, 2, ENVELOPE_DEFAULT, s)
+	n3 := NewCmdNote(38, 0, 1, ENVELOPE_DEFAULT, s)
+	n4 := NewCmdNote(39, 0, 2, ENVELOPE_DEFAULT, s)
+	s.AddCommand(n1)
+	s.AddCommand(n2)
+	s.AddCommand(n3)
+	s.AddCommand(n4)
+	s.activeCommands = append(s.activeCommands, n1, n2, n3, n4)
+	s.curSample = n1.LastSample()
+	s.deactivateCompleted()
+	res := len(s.activeCommands)
+	if res != 2 {
+		t.Errorf("Have %d active commands, should have 2", res)
+	}
+}
