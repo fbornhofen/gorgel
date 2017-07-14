@@ -1,8 +1,8 @@
 package libgorgel
 
 import (
-	"code.google.com/p/portaudio-go/portaudio"
 	"fmt"
+	"github.com/gordonklaus/portaudio"
 	"github.com/mkb218/gosndfile/sndfile"
 	"math"
 	"os"
